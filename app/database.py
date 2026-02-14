@@ -11,7 +11,11 @@ db_name = os.getenv("DB_NAME")
 collection_name = os.getenv("COLLECTION_NAME")
 
 # Initialize async MongoDB client with Stable API for version consistency
-client = AsyncIOMotorClient(mongo_uri, server_api=ServerApi('1'))
+client = AsyncIOMotorClient(
+    mongo_uri,
+    server_api=ServerApi('1'), 
+    tlsAllowInvalidCertificates=True
+)
 
 # Database and collections references 
 db = client[db_name]
