@@ -47,7 +47,7 @@ El proyecto sigue una arquitectura en capas: las rutas reciben las peticiones HT
 1. Clona el repositorio:
 
 ```bash
-git clone https://github.com/eduardohdez/kalmy-fastapi.git
+git clone https://github.com/eduardo-hdez/Kalmy-FastAPI.git
 cd kalmy-fastapi
 ```
 
@@ -76,6 +76,12 @@ docker compose up --build
 La API estará disponible en `http://localhost:8000`.
 
 La base de datos se persiste en el volumen `db-data`, por lo que los datos sobreviven a reinicios del contenedor.
+
+Para detener y eliminar completamente los contenedores, redes y volúmenes:
+
+```bash
+docker compose down -v --rmi all
+```
 
 ### Variables de entorno
 
@@ -108,6 +114,10 @@ Los tests usan `TestClient`, que levanta la aplicación sin necesidad de correr 
 
 - `setup_test_db` (`autouse=True`): crea todas las tablas antes de cada test y las destruye al terminar, garantizando que cada prueba parte de una base de datos limpia e independiente.
 - `override_get_db`: reemplaza la dependencia `get_db` con una sesión que apunta a `test.db`, de modo que los tests nunca tocan la base de datos de desarrollo.
+
+### UUID como identificador de items
+
+El campo `id` de cada item se genera automáticamente como un UUID v4 (`uuid.uuid4()`) al momento de la creación, sin necesidad de que el cliente lo provea. Se almacena como `String` en la base de datos y se expone como cadena de texto en la API. Esto garantiza identificadores únicos globalmente y evita colisiones en entornos distribuidos.
 
 ### Docker y Docker Compose
 
