@@ -1,25 +1,25 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 from app.controllers import item_controller
+from app.database import get_db
 from app.schemas.item import ItemCreate, ItemUpdate, ItemResponse
 
 router = APIRouter(prefix="/items", tags=["items"])
 
 @router.post("/", response_model=ItemResponse, status_code=status.HTTP_201_CREATED)
-async def create_item(item_data: ItemCreate):
+def create_item(item_data: ItemCreate, db: Session = Depends(get_db)):
     """Create a new item"""
-    item = await item_controller.create_item(item_data)
-    return item
+    return item_controller.create_item(item_data, db)
 
 @router.get("/", response_model=list[ItemResponse])
-async def get_items():
+def get_items(db: Session = Depends(get_db)):
     """Get all items"""
-    items = await item_controller.get_all_items()
-    return items
-    
+    return item_controller.get_all_items(db)
+
 @router.get("/{item_id}", response_model=ItemResponse)
-async def get_item(item_id: str):
-    "Get a single item by ID"
-    item = await item_controller.get_item_by_id(item_id)
+def get_item(item_id: str, db: Session = Depends(get_db)):
+    """Get a single item by ID"""
+    item = item_controller.get_item_by_id(item_id, db)
 
     if item is None:
         raise HTTPException(
@@ -28,31 +28,27 @@ async def get_item(item_id: str):
         )
 
     return item
-    
+
 @router.put("/{item_id}", response_model=ItemResponse)
-async def update_item(item_id: str, item_data: ItemUpdate):
+def update_item(item_id: str, item_data: ItemUpdate, db: Session = Depends(get_db)):
     """Update an existing item by ID"""
-    item = await item_controller.update_item(item_id, item_data)
+    item = item_controller.update_item(item_id, item_data, db)
 
     if item is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Item with ID {item_id} was not found"
         )
-    
+
     return item
 
-@router.delete("/{item_id}")
-async def delete_item(item_id: str):
+@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_item(item_id: str, db: Session = Depends(get_db)):
     """Delete an item by ID"""
-    item = await item_controller.delete_item(item_id)
-
+    item = item_controller.delete_item(item_id, db)
+    
     if item is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Item with ID {item_id} was not found"
         )
-    
-    return {"message": "Item deleted successfully",
-            "deleted_item": item
-    }
